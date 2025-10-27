@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  api-watcher:
+    build: .
+    container_name: api-watcher
+    volumes:
+      - ./snapshots:/app/snapshots
+      - ./urls.json:/app/urls.json
+      - ./.env:/app/.env
+    environment:
+      - API_WATCHER_SNAPSHOTS_DIR=/app/snapshots
+      - API_WATCHER_URLS_FILE=/app/urls.json
+    restart: unless-stopped
+    
+    # Для запуска по расписанию (каждые 30 минут)
+    # Раскомментируйте следующие строки и закомментируйте command выше
+    # command: >
+    #   sh -c "
+    #   while true; do
+    #     python api_watcher/main.py
+    #     sleep 1800
+    #   done
+    #   "
+
+  # Опциональный сервис для веб-интерфейса (будущая функция)
+  # api-watcher-web:
+  #   build: 
+  #     context: .
+  #     dockerfile: Dockerfile.web
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - api-watcher
+  #   volumes:
+  #     - ./snapshots:/app/snapshots

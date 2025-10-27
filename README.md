@@ -1,0 +1,232 @@
+# 🤖 API Watcher
+
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+**Умный микросервис для мониторинга изменений в API документации**
+
+API Watcher автоматически отслеживает изменения в различных типах API документации и уведомляет вас о любых обновлениях. Поддерживает HTML-страницы, OpenAPI спецификации, JSON Schema, Postman коллекции и Markdown документы.
+
+## ✨ Основные возможности
+
+- 🔍 **Мониторинг конкретных методов API** - не всей документации, а только нужных разделов
+- 📋 **5 типов документации**: HTML, OpenAPI, JSON, Postman, Markdown
+- 🎯 **Точечное отслеживание**: CSS селекторы, якори, фильтры по путям
+- 💾 **Система снимков** для отслеживания изменений во времени
+- 🔄 **Детальное сравнение** через DeepDiff с подробными отчетами
+- 📢 **Уведомления**: консоль + Telegram Bot
+- ⚙️ **Гибкая конфигурация** через JSON и переменные окружения
+- 🚀 **Готов к продакшену**: поддержка cron, Docker, CI/CD
+
+## 🚀 Быстрый старт
+
+### Установка
+
+```bash
+# Клонируем репозиторий
+git clone https://github.com/yourusername/api-watcher.git
+cd api-watcher
+
+# Создаем виртуальное окружение
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# или
+venv\Scripts\activate     # Windows
+
+# Устанавливаем зависимости
+pip install -r api_watcher/requirements.txt
+```
+
+### Настройка
+
+1. **Скопируйте пример конфигурации:**
+   ```bash
+   cp api_watcher/.env.example .env
+   ```
+
+2. **Настройте источники в `urls.json`:**
+   ```json
+   [
+     {
+       "url": "https://docs.stripe.com/api/customers#create_customer",
+       "type": "html",
+       "name": "Stripe - Создание клиента",
+       "selector": ".method",
+       "description": "Мониторинг метода создания клиента"
+     }
+   ]
+   ```
+
+### Запуск
+
+```bash
+# Основной запуск
+python api_watcher/main.py
+
+# Быстрый тест
+python api_watcher/quick_test.py
+
+# Тест изменений
+python api_watcher/test_changes.py
+```
+
+## 📖 Документация
+
+- 📚 [Полная документация](api_watcher/README.md)
+- 🧪 [Отчет о тестировании](api_watcher/TESTING_REPORT.md)
+- ⚙️ [Примеры конфигурации](api_watcher/.env.example)
+
+## 🎯 Примеры использования
+
+### Мониторинг конкретного метода API
+
+```json
+{
+  "url": "https://docs.stripe.com/api/customers#create_customer",
+  "type": "html",
+  "name": "Stripe - Создание клиента",
+  "selector": "#create_customer",
+  "description": "Отслеживание изменений в методе создания клиента"
+}
+```
+
+### Фильтрация OpenAPI по путям
+
+```json
+{
+  "url": "https://petstore3.swagger.io/api/v3/openapi.json",
+  "type": "openapi",
+  "name": "Swagger Petstore - Pets",
+  "method_filter": "/pet",
+  "description": "Мониторинг только методов работы с питомцами"
+}
+```
+
+### Мониторинг JSON API
+
+```json
+{
+  "url": "https://api.github.com",
+  "type": "json",
+  "name": "GitHub API Root",
+  "description": "Отслеживание изменений в корневом эндпоинте GitHub"
+}
+```
+
+## 🔔 Уведомления
+
+### Консоль
+```
+🔔 ОБНАРУЖЕНЫ ИЗМЕНЕНИЯ
+URL: https://docs.stripe.com/api/customers
+Время: 2024-10-24 15:30:45
+============================================================
+➕ ДОБАВЛЕНО:
+  + new_parameter
+🔄 ИЗМЕНЕНО:
+  📍 description
+    Было: Create a customer
+    Стало: Create a new customer with validation
+============================================================
+```
+
+### Telegram
+Настройте бота через переменные окружения:
+```bash
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_CHAT_ID=your_chat_id
+```
+
+## 📊 Поддерживаемые типы документации
+
+| Тип | Описание | Дополнительные параметры |
+|-----|----------|-------------------------|
+| `html` | HTML-страницы | `selector` - CSS селектор |
+| `openapi` | OpenAPI/Swagger | `method_filter` - фильтр путей |
+| `json` | JSON API/Schema | - |
+| `postman` | Postman коллекции | - |
+| `md` | Markdown документы | - |
+
+## 🛠️ Архитектура
+
+```
+api_watcher/
+├── main.py              # Точка входа
+├── config.py            # Конфигурация
+├── parsers/             # Парсеры для разных типов
+│   ├── html_parser.py
+│   ├── openapi_parser.py
+│   ├── json_parser.py
+│   ├── postman_parser.py
+│   └── md_parser.py
+├── storage/             # Управление снимками
+│   └── snapshot_manager.py
+├── notifier/            # Система уведомлений
+│   ├── console_notifier.py
+│   └── telegram_notifier.py
+├── utils/               # Утилиты
+│   └── comparator.py
+└── tests/               # Тесты
+    ├── test_changes.py
+    └── quick_test.py
+```
+
+## 🔄 Автоматизация
+
+### Cron (Linux/Mac)
+```bash
+# Каждые 30 минут
+*/30 * * * * cd /path/to/api-watcher && python api_watcher/main.py
+
+# Каждый час
+0 * * * * cd /path/to/api-watcher && python api_watcher/main.py
+```
+
+### Task Scheduler (Windows)
+```powershell
+$action = New-ScheduledTaskAction -Execute "python" -Argument "api_watcher/main.py" -WorkingDirectory "C:\path\to\api-watcher"
+$trigger = New-ScheduledTaskTrigger -RepetitionInterval (New-TimeSpan -Minutes 30) -Once -At (Get-Date)
+Register-ScheduledTask -TaskName "APIWatcher" -Action $action -Trigger $trigger
+```
+
+## 🧪 Тестирование
+
+Проект протестирован на **21 различном источнике** документации:
+
+- ✅ **17 успешно работающих** (81%)
+- 🔍 **6 источников с обнаруженными изменениями**
+- 📊 **23 созданных снимка**
+
+Подробности в [отчете о тестировании](api_watcher/TESTING_REPORT.md).
+
+## 🤝 Участие в разработке
+
+1. Форкните репозиторий
+2. Создайте ветку для новой функции (`git checkout -b feature/amazing-feature`)
+3. Зафиксируйте изменения (`git commit -m 'Add amazing feature'`)
+4. Отправьте в ветку (`git push origin feature/amazing-feature`)
+5. Откройте Pull Request
+
+## 📝 Лицензия
+
+Этот проект лицензирован под MIT License - см. файл [LICENSE](LICENSE) для деталей.
+
+## 🙏 Благодарности
+
+- [DeepDiff](https://github.com/seperman/deepdiff) - для сравнения структур данных
+- [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/) - для парсинга HTML
+- [Requests](https://docs.python-requests.org/) - для HTTP запросов
+- [PyYAML](https://pyyaml.org/) - для работы с YAML
+
+## 📞 Поддержка
+
+Если у вас есть вопросы или предложения:
+
+- 🐛 [Создайте Issue](https://github.com/yourusername/api-watcher/issues)
+- 💬 [Обсуждения](https://github.com/yourusername/api-watcher/discussions)
+- 📧 Email: your.email@example.com
+
+---
+
+⭐ **Поставьте звезду, если проект вам понравился!**

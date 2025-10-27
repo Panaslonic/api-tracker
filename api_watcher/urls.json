@@ -1,0 +1,22 @@
+[
+  {
+    "url": "https://docs.stripe.com/api/customers",
+    "type": "html"
+  },
+  {
+    "url": "https://petstore3.swagger.io/api/v3/openapi.json",
+    "type": "openapi"
+  },
+  {
+    "url": "https://api.github.com",
+    "type": "json"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/postmanlabs/postman-app-support/master/collection.json",
+    "type": "postman"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/microsoft/vscode/main/CHANGELOG.md",
+    "type": "md"
+  }
+]

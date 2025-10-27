@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11, 3.12]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r api_watcher/requirements.txt
+        pip install pytest pytest-cov black flake8
+    
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 api_watcher --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 api_watcher --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Check code formatting with black
+      run: |
+        black --check api_watcher
+    
+    - name: Create test configuration
+      run: |
+        echo '[{"url": "https://httpbin.org/json", "type": "json", "name": "Test", "description": "Test"}]' > urls.json
+    
+    - name: Run quick test
+      run: |
+        python api_watcher/quick_test.py
+    
+    - name: Test basic functionality
+      run: |
+        # Test that main.py can be imported and basic classes work
+        python -c "
+        import sys
+        sys.path.append('api_watcher')
+        from main import APIWatcher
+        from parsers.json_parser import JSONParser
+        from storage.snapshot_manager import SnapshotManager
+        from utils.comparator import Comparator
+        print('✅ All imports successful')
+        
+        # Test basic functionality
+        parser = JSONParser()
+        manager = SnapshotManager('test_snapshots')
+        comparator = Comparator()
+        print('✅ All classes instantiated successfully')
+        "
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety bandit
+        pip install -r api_watcher/requirements.txt
+    
+    - name: Run safety check
+      run: |
+        safety check
+    
+    - name: Run bandit security check
+      run: |
+        bandit -r api_watcher -f json -o bandit-report.json || true
+        bandit -r api_watcher
