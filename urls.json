@@ -1,158 +1,208 @@
 [
   {
-    "url": "https://docs.stripe.com/api/customers#create_customer",
+    "url": "https://api.u-on.ru/doc#post--{key}-lead-create.{_format}",
     "type": "html",
-    "name": "Stripe - Создание клиента",
-    "selector": ".method",
-    "description": "Мониторинг метода создания клиента в Stripe API"
+    "name": "U-ON API - Создание лида",
+    "description": "Мониторинг документации метода создания лида в U-ON CRM"
   },
   {
-    "url": "https://docs.stripe.com/api/payment_intents#create_payment_intent",
+    "url": "https://api.u-on.ru/doc#post--{key}-request-create.{_format}",
     "type": "html",
-    "name": "Stripe - Создание платежа",
-    "selector": ".method",
-    "description": "Мониторинг метода создания платежного намерения"
+    "name": "U-ON API - Создание заявки",
+    "description": "Мониторинг документации метода создания заявки в U-ON CRM"
   },
   {
-    "url": "https://developer.github.com/v3/repos/#create-a-repository",
+    "url": "https://api.u-on.ru/doc#post--{key}-reminder-create.{_format}",
     "type": "html",
-    "name": "GitHub - Создание репозитория",
-    "selector": "#create-a-repository",
-    "description": "Мониторинг API создания репозитория GitHub"
+    "name": "U-ON API - Создание напоминания",
+    "description": "Мониторинг документации метода создания напоминания в U-ON CRM"
   },
   {
-    "url": "https://docs.github.com/en/rest/repos/repos#create-a-repository-for-the-authenticated-user",
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#getleads",
     "type": "html",
-    "name": "GitHub REST API - Repos",
-    "description": "Мониторинг документации по работе с репозиториями"
+    "name": "Hollihop API - GetLeads",
+    "description": "Мониторинг документации метода получения лидов"
   },
   {
-    "url": "https://petstore3.swagger.io/api/v3/openapi.json",
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#getpayments",
+    "type": "html",
+    "name": "Hollihop API - GetPayments",
+    "description": "Мониторинг документации метода получения платежей"
+  },
+  {
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#getstudyrequests",
+    "type": "html",
+    "name": "Hollihop API - GetStudyRequests",
+    "description": "Мониторинг документации метода получения заявок на обучение"
+  },
+  {
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#gethistorymodifyleadstatus",
+    "type": "html",
+    "name": "Hollihop API - GetHistoryModifyLeadStatus",
+    "description": "Мониторинг документации метода получения истории изменения статусов лидов"
+  },
+  {
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#addstudent",
+    "type": "html",
+    "name": "Hollihop API - AddStudent",
+    "description": "Мониторинг документации метода добавления студента"
+  },
+  {
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#addlead",
+    "type": "html",
+    "name": "Hollihop API - AddLead",
+    "description": "Мониторинг документации метода добавления лида"
+  },
+  {
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#addpayment",
+    "type": "html",
+    "name": "Hollihop API - AddPayment",
+    "description": "Мониторинг документации метода добавления платежа"
+  },
+  {
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#editpayment",
+    "type": "html",
+    "name": "Hollihop API - EditPayment",
+    "description": "Мониторинг документации метода редактирования платежа"
+  },
+  {
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#addedunitpayment",
+    "type": "html",
+    "name": "Hollihop API - AddEdUnitPayment",
+    "description": "Мониторинг документации метода добавления платежа за образовательную единицу"
+  },
+  {
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#addstudentfromlead",
+    "type": "html",
+    "name": "Hollihop API - AddStudentFromLead",
+    "description": "Мониторинг документации метода создания студента из лида"
+  },
+  {
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#setleadstatus",
+    "type": "html",
+    "name": "Hollihop API - SetLeadStatus",
+    "description": "Мониторинг документации метода установки статуса лида"
+  },
+  {
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#setclientstatus",
+    "type": "html",
+    "name": "Hollihop API - SetClientStatus",
+    "description": "Мониторинг документации метода установки статуса клиента"
+  },
+  {
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#addedunitlead",
+    "type": "html",
+    "name": "Hollihop API - AddEdUnitLead",
+    "description": "Мониторинг документации метода добавления лида для образовательной единицы"
+  },
+  {
+    "url": "https://hollipedia.t8s.ru/books/api/page/hollihop-api-20#addedunitstudent",
+    "type": "html",
+    "name": "Hollihop API - AddEdUnitStudent",
+    "description": "Мониторинг документации метода добавления студента для образовательной единицы"
+  },
+  {
+    "url": "https://dev.megaplan.ru/apiv3/index.html#message",
+    "type": "html",
+    "name": "Megaplan API - Message",
+    "description": "Мониторинг документации методов работы с сообщениями"
+  },
+  {
+    "url": "https://dev.megaplan.ru/apiv3/index.html#contractorcompany",
+    "type": "html",
+    "name": "Megaplan API - ContractorCompany",
+    "description": "Мониторинг документации методов работы с компаниями-контрагентами"
+  },
+  {
+    "url": "https://dev.megaplan.ru/apiv3/index.html#contractorhuman",
+    "type": "html",
+    "name": "Megaplan API - ContractorHuman",
+    "description": "Мониторинг документации методов работы с физическими лицами-контрагентами"
+  },
+  {
+    "url": "https://dev.megaplan.ru/apiv3/index.html#offer",
+    "type": "html",
+    "name": "Megaplan API - Offer",
+    "description": "Мониторинг документации методов работы с предложениями"
+  },
+  {
+    "url": "https://dev.megaplan.ru/apiv3/index.html#deal",
+    "type": "html",
+    "name": "Megaplan API - Deal",
+    "description": "Мониторинг документации методов работы со сделками"
+  },
+  {
+    "url": "https://dev.megaplan.ru/apiv3/index.html#todo",
+    "type": "html",
+    "name": "Megaplan API - Todo",
+    "description": "Мониторинг документации методов работы с задачами"
+  },
+  {
+    "url": "https://dev.megaplan.ru/apiv3/index.html#search",
+    "type": "html",
+    "name": "Megaplan API - Search",
+    "description": "Мониторинг документации методов поиска"
+  },
+  {
+    "url": "https://dev.megaplan.ru/apiv3/index.html#duplicates",
+    "type": "html",
+    "name": "Megaplan API - Duplicates",
+    "description": "Мониторинг документации методов работы с дубликатами"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/openai/openai-openapi/manual_spec/openapi.yaml",
     "type": "openapi",
-    "name": "Swagger Petstore - Pets",
-    "method_filter": "/pet",
-    "description": "Мониторинг методов работы с питомцами"
+    "name": "OpenAI API - Create Chat Completion",
+    "method_filter": "/chat/completions",
+    "description": "Мониторинг официальной OpenAPI спецификации метода создания чат-завершений"
   },
   {
-    "url": "https://petstore3.swagger.io/api/v3/openapi.json",
+    "url": "https://raw.githubusercontent.com/openai/openai-openapi/manual_spec/openapi.yaml",
     "type": "openapi",
-    "name": "Swagger Petstore - Store",
-    "method_filter": "/store",
-    "description": "Мониторинг методов работы с магазином"
+    "name": "OpenAI API - Image Generation",
+    "method_filter": "/images/generations",
+    "description": "Мониторинг официальной OpenAPI спецификации метода генерации изображений"
   },
   {
-    "url": "https://api.github.com",
-    "type": "json",
-    "name": "GitHub API Root",
-    "description": "Мониторинг корневого эндпоинта GitHub API"
-  },
-  {
-    "url": "https://httpbin.org/json",
-    "type": "json",
-    "name": "HTTPBin JSON Test",
-    "description": "Тестовый JSON эндпоинт для проверки парсера"
-  },
-  {
-    "url": "https://jsonplaceholder.typicode.com/posts/1",
-    "type": "json",
-    "name": "JSONPlaceholder - Post",
-    "description": "Тестовый API для демонстрации JSON парсинга"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/microsoft/vscode/main/README.md",
-    "type": "md",
-    "name": "VS Code README",
-    "description": "Мониторинг изменений в README VS Code"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/facebook/react/main/CHANGELOG.md",
-    "type": "md",
-    "name": "React CHANGELOG",
-    "description": "Мониторинг изменений в React"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/nodejs/node/main/doc/api/fs.md",
-    "type": "md",
-    "name": "Node.js FS API",
-    "description": "Мониторинг документации файловой системы Node.js"
-  },
-  {
-    "url": "https://docs.docker.com/engine/api/v1.41/",
-    "type": "html",
-    "name": "Docker Engine API",
-    "description": "Мониторинг Docker Engine API документации"
-  },
-  {
-    "url": "https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#pod-v1-core",
-    "type": "html",
-    "name": "Kubernetes Pod API",
-    "selector": "#pod-v1-core",
-    "description": "Мониторинг Kubernetes Pod API"
-  },
-  {
-    "url": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html",
-    "type": "html",
-    "name": "AWS S3 - CreateBucket",
-    "description": "Мониторинг AWS S3 CreateBucket API"
-  },
-  {
-    "url": "https://developers.google.com/drive/api/v3/reference/files/create",
-    "type": "html",
-    "name": "Google Drive API - Create File",
-    "description": "Мониторинг Google Drive API создания файлов"
-  },
-  {
-    "url": "https://graph.microsoft.com/v1.0/$metadata",
-    "type": "json",
-    "name": "Microsoft Graph Metadata",
-    "description": "Мониторинг метаданных Microsoft Graph API"
-  },
-  {
-    "url": "https://api.slack.com/methods/chat.postMessage",
-    "type": "html",
-    "name": "Slack API - Post Message",
-    "description": "Мониторинг Slack API отправки сообщений"
-  },
-  {
-    "url": "https://developers.telegram.org/bots/api#sendmessage",
-    "type": "html",
-    "name": "Telegram Bot API - Send Message",
-    "description": "Мониторинг Telegram Bot API отправки сообщений"
-  },
-  {
-    "url": "https://api.twitter.com/2/openapi.json",
+    "url": "https://raw.githubusercontent.com/openai/openai-openapi/manual_spec/openapi.yaml",
     "type": "openapi",
-    "name": "Twitter API v2",
-    "description": "Мониторинг Twitter API v2 спецификации"
+    "name": "OpenAI API - Create Embeddings",
+    "method_filter": "/embeddings",
+    "description": "Мониторинг официальной OpenAPI спецификации метода создания эмбеддингов"
   },
   {
-    "url": "https://httpbin.org/get",
-    "type": "json",
-    "name": "HTTPBin GET Test",
-    "description": "Тестовый GET эндпоинт с динамическими данными"
+    "url": "https://raw.githubusercontent.com/openai/openai-openapi/manual_spec/openapi.yaml",
+    "type": "openapi",
+    "name": "OpenAI API - Message to Assistant",
+    "method_filter": "/threads/{thread_id}/messages",
+    "description": "Мониторинг официальной OpenAPI спецификации метода отправки сообщений ассистенту"
   },
   {
-    "url": "https://api.coindesk.com/v1/bpi/currentprice.json",
-    "type": "json",
-    "name": "CoinDesk Bitcoin Price",
-    "description": "Мониторинг цены Bitcoin (часто меняется)"
+    "url": "https://raw.githubusercontent.com/openai/openai-openapi/manual_spec/openapi.yaml",
+    "type": "openapi",
+    "name": "OpenAI API - Check Moderation",
+    "method_filter": "/moderations",
+    "description": "Мониторинг официальной OpenAPI спецификации метода модерации контента"
   },
   {
-    "url": "https://raw.githubusercontent.com/python/cpython/main/README.rst",
-    "type": "md",
-    "name": "Python README",
-    "description": "Мониторинг README Python"
+    "url": "https://raw.githubusercontent.com/openai/openai-openapi/manual_spec/openapi.yaml",
+    "type": "openapi",
+    "name": "OpenAI API - Create Image Edit",
+    "method_filter": "/images/edits",
+    "description": "Мониторинг официальной OpenAPI спецификации метода редактирования изображений"
   },
   {
-    "url": "https://raw.githubusercontent.com/django/django/main/docs/releases/5.0.txt",
-    "type": "md",
-    "name": "Django 5.0 Release Notes",
-    "description": "Мониторинг релизных заметок Django"
+    "url": "https://raw.githubusercontent.com/openai/openai-openapi/manual_spec/openapi.yaml",
+    "type": "openapi",
+    "name": "OpenAI API - Convert Speech to Text",
+    "method_filter": "/audio/transcriptions",
+    "description": "Мониторинг официальной OpenAPI спецификации метода транскрипции аудио в текст"
   },
   {
-    "url": "test_api.json",
-    "type": "json",
-    "name": "Test API Local",
-    "description": "Локальный тестовый API для демонстрации изменений"
+    "url": "https://raw.githubusercontent.com/openai/openai-openapi/manual_spec/openapi.yaml",
+    "type": "openapi",
+    "name": "OpenAI API - Text to Speech",
+    "method_filter": "/audio/speech",
+    "description": "Мониторинг официальной OpenAPI спецификации метода синтеза речи из текста"
   }
 ]

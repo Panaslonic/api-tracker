@@ -6,6 +6,7 @@ Snapshot Manager - управление снимками состояния до
 import json
 import os
 import hashlib
+import re
 from typing import Dict, Any, Optional
 from datetime import datetime
 
@@ -20,18 +21,43 @@ class SnapshotManager:
         if not os.path.exists(self.snapshots_dir):
             os.makedirs(self.snapshots_dir)
 
-    def _get_snapshot_filename(self, url: str) -> str:
-        """Генерирует имя файла для снимка на основе URL"""
-        # Создаем хеш от URL для безопасного имени файла
-        url_hash = hashlib.md5(url.encode('utf-8')).hexdigest()
-        return f"{url_hash}.json"
+    def _get_snapshot_filename(self, url: str, api_name: str = None, method_name: str = None, method_filter: str = None) -> str:
+        """Генерирует имя файла для снимка на основе URL и метаданных"""
+        # Создаем уникальный идентификатор, включающий URL и фильтр метода
+        unique_key = url
+        if method_filter:
+            unique_key += f"#{method_filter}"
+        
+        url_hash = hashlib.md5(unique_key.encode('utf-8')).hexdigest()[:8]
+        
+        # Создаем читаемое имя файла
+        if api_name and method_name:
+            # Очищаем названия от недопустимых символов
+            safe_api = re.sub(r'[^\w\-_]', '_', api_name)[:20]
+            safe_method = re.sub(r'[^\w\-_]', '_', method_name)[:30]
+            return f"{safe_api}_{safe_method}_{url_hash}.json"
+        else:
+            return f"snapshot_{url_hash}.json"
 
-    def save_snapshot(self, url: str, data: Dict[str, Any]) -> None:
-        """Сохраняет снимок данных"""
-        filename = self._get_snapshot_filename(url)
+    def save_snapshot(self, url: str, data: Dict[str, Any], api_name: str = None, method_name: str = None, method_filter: str = None) -> None:
+        """Сохраняет снимок данных с метаданными"""
+        filename = self._get_snapshot_filename(url, api_name, method_name, method_filter)
         filepath = os.path.join(self.snapshots_dir, filename)
         
+        # Извлекаем название метода из данных, если не передано
+        if not method_name and isinstance(data, dict):
+            method_content = data.get('method_content', {})
+            if isinstance(method_content, dict):
+                method_name = method_content.get('method_name', 'Unknown Method')
+        
         snapshot = {
+            'metadata': {
+                'api_name': api_name or 'Unknown API',
+                'method_name': method_name or 'Unknown Method',
+                'snapshot_date': datetime.now().strftime('%Y-%m-%d'),
+                'snapshot_time': datetime.now().strftime('%H:%M:%S'),
+                'full_timestamp': datetime.now().isoformat()
+            },
             'url': url,
             'timestamp': datetime.now().isoformat(),
             'data': data
@@ -44,21 +70,31 @@ class SnapshotManager:
         except Exception as e:
             print(f"❌ Ошибка сохранения снимка для {url}: {e}")
 
-    def load_snapshot(self, url: str) -> Optional[Dict[str, Any]]:
+    def load_snapshot(self, url: str, method_filter: str = None) -> Optional[Dict[str, Any]]:
         """Загружает предыдущий снимок данных"""
-        filename = self._get_snapshot_filename(url)
-        filepath = os.path.join(self.snapshots_dir, filename)
+        # Создаем уникальный ключ, включающий URL и фильтр метода
+        unique_key = url
+        if method_filter:
+            unique_key += f"#{method_filter}"
         
-        if not os.path.exists(filepath):
-            return None
+        url_hash = hashlib.md5(unique_key.encode('utf-8')).hexdigest()[:8]
         
-        try:
-            with open(filepath, 'r', encoding='utf-8') as f:
-                snapshot = json.load(f)
-            return snapshot.get('data')
-        except Exception as e:
-            print(f"❌ Ошибка загрузки снимка для {url}: {e}")
-            return None
+        # Ищем файлы, содержащие этот хеш
+        if os.path.exists(self.snapshots_dir):
+            for filename in os.listdir(self.snapshots_dir):
+                if url_hash in filename and filename.endswith('.json'):
+                    filepath = os.path.join(self.snapshots_dir, filename)
+                    try:
+                        with open(filepath, 'r', encoding='utf-8') as f:
+                            snapshot = json.load(f)
+                        # Проверяем, что это правильный URL
+                        if snapshot.get('url') == url:
+                            return snapshot.get('data')
+                    except Exception as e:
+                        print(f"❌ Ошибка загрузки снимка {filename}: {e}")
+                        continue
+        
+        return None
 
     def get_snapshot_info(self, url: str) -> Optional[Dict[str, str]]:
         """Получает информацию о снимке (без данных)"""

@@ -85,8 +85,11 @@ class APIWatcher:
             else:
                 current_data = parser.parse(url)
             
+            # Получаем method_filter для OpenAPI
+            method_filter = url_config.get('method_filter') if doc_type == 'openapi' else None
+            
             # Получаем предыдущий snapshot
-            previous_data = self.snapshot_manager.load_snapshot(url)
+            previous_data = self.snapshot_manager.load_snapshot(url, method_filter)
             
             # Сравниваем данные
             if previous_data is not None:
@@ -98,17 +101,19 @@ class APIWatcher:
                     if self.telegram_notifier:
                         self.telegram_notifier.notify_changes(url, diff)
                     
-                    self.snapshot_manager.save_snapshot(url, current_data)
+                    self.snapshot_manager.save_snapshot(url, current_data, name, self._extract_method_name(current_data), method_filter)
                     print(f"✅ Обнаружены изменения в {url}")
                 else:
                     print(f"📄 Изменений не обнаружено в {url}")
             else:
                 # Первый запуск - сохраняем snapshot
-                self.snapshot_manager.save_snapshot(url, current_data)
+                self.snapshot_manager.save_snapshot(url, current_data, name, self._extract_method_name(current_data), method_filter)
                 print(f"💾 Создан первый snapshot для {url}")
                 
         except Exception as e:
+            import traceback
             print(f"❌ Ошибка при обработке {url}: {e}")
+            print(f"Детали ошибки: {traceback.format_exc()}")
 
     def run(self) -> None:
         """Основной цикл выполнения"""
@@ -123,6 +128,37 @@ class APIWatcher:
             self.process_url(url_config)
         
         print("✨ Обработка завершена")
+
+    def _extract_method_name(self, data: Dict[str, Any]) -> str:
+        """Извлекает название метода из данных"""
+        if isinstance(data, dict):
+            # Для HTML парсера
+            method_content = data.get('method_content', {})
+            if isinstance(method_content, dict):
+                method_name = method_content.get('method_name', '')
+                if method_name:
+                    # Очищаем название метода от лишних символов
+                    clean_name = method_name.replace('\n', ' ').strip()
+                    if len(clean_name) > 50:
+                        clean_name = clean_name[:50] + '...'
+                    return clean_name
+            
+            # Для OpenAPI парсера
+            if 'paths' in data:
+                paths = data.get('paths', {})
+                if paths:
+                    first_path = list(paths.keys())[0] if paths else 'Unknown'
+                    return f"OpenAPI: {first_path}"
+            
+            # Для JSON парсера
+            if 'structure' in data:
+                return "JSON API"
+            
+            # Для Markdown парсера
+            if 'sections' in data:
+                return "Markdown Doc"
+        
+        return "Unknown Method"
 
 
 if __name__ == "__main__":

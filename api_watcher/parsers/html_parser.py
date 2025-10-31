@@ -155,19 +155,21 @@ class HTMLParser:
 
     def _get_method_name(self, section) -> str:
         """Извлекает название метода"""
-        # Ищем заголовок в самой секции или в предыдущих элементах
-        header = section.find(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
-        if header:
-            return header.get_text().strip()
-        
-        # Если заголовок не найден в секции, ищем в предыдущих элементах
-        current = section.previous_sibling
-        while current:
-            if hasattr(current, 'find') and current.find(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
-                return current.find(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']).get_text().strip()
-            current = current.previous_sibling
-        
-        return section.get('id', 'Unknown Method')
+        try:
+            # Ищем заголовок в самой секции
+            for tag in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
+                header = section.find(tag)
+                if header and hasattr(header, 'get_text'):
+                    return header.get_text().strip()
+            
+            # Если не найден, возвращаем ID секции или URL якорь
+            section_id = section.get('id') if hasattr(section, 'get') else None
+            if section_id:
+                return section_id
+            
+            return 'Unknown Method'
+        except Exception as e:
+            return f'Method (error: {str(e)})'
 
     def _get_method_description(self, section) -> str:
         """Извлекает описание метода"""
@@ -226,7 +228,8 @@ class HTMLParser:
             # Проверяем, похоже ли на JSON ответ
             if text.startswith('{') and text.endswith('}'):
                 examples.append(text)
-            elif 'response' in block.get('class', []) or 'response' in str(block.parent.get('class', [])):
+            elif ('response' in (block.get('class') or []) or 
+                  'response' in (block.parent.get('class') if block.parent else [])):
                 examples.append(text)
         
         return examples
