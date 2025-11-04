@@ -42,28 +42,42 @@ jobs:
       run: |
         echo '[{"url": "https://httpbin.org/json", "type": "json", "name": "Test", "description": "Test"}]' > urls.json
     
-    - name: Run quick test
+    - name: Run unit tests
+      run: |
+        cd api_watcher
+        python run_tests.py unit
+    
+    - name: Run main module tests
+      run: |
+        cd api_watcher
+        python run_tests.py main
+    
+    - name: Run integration tests
+      run: |
+        cd api_watcher
+        python run_tests.py integration
+    
+    - name: Run tests with coverage
+      run: |
+        cd api_watcher
+        python run_tests.py coverage
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./api_watcher/htmlcov/index.html
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+    
+    - name: Run quick test (legacy)
       run: |
         python api_watcher/quick_test.py
     
-    - name: Test basic functionality
+    - name: Test health check
       run: |
-        # Test that main.py can be imported and basic classes work
-        python -c "
-        import sys
-        sys.path.append('api_watcher')
-        from main import APIWatcher
-        from parsers.json_parser import JSONParser
-        from storage.snapshot_manager import SnapshotManager
-        from utils.comparator import Comparator
-        print('✅ All imports successful')
-        
-        # Test basic functionality
-        parser = JSONParser()
-        manager = SnapshotManager('test_snapshots')
-        comparator = Comparator()
-        print('✅ All classes instantiated successfully')
-        "
+        cd api_watcher
+        python main.py --health-check
 
   security:
     runs-on: ubuntu-latest
