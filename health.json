@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-11-04T23:29:25.353940",
-  "status": "healthy",
+  "timestamp": "2025-11-16T13:57:10.925180",
+  "status": "degraded",
   "details": {
-    "total_urls": 28,
-    "successful": 28,
-    "failed": 0,
-    "changes_detected": 0,
-    "processing_time": 47.8,
-    "last_run": "2025-11-04T23:29:25.353940"
+    "total_urls": 541,
+    "successful": 490,
+    "failed": 51,
+    "changes_detected": 2,
+    "processing_time": 614.64,
+    "last_run": "2025-11-16T13:57:10.925180"
   }
 }

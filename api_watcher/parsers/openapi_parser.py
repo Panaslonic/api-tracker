@@ -7,6 +7,7 @@ import requests
 import json
 import yaml
 from typing import Dict, Any, List
+from requests.exceptions import Timeout, ConnectionError, HTTPError
 
 
 class OpenAPIParser:
@@ -15,16 +16,31 @@ class OpenAPIParser:
 
     def parse(self, url: str, method_filter: str = None) -> Dict[str, Any]:
         """Парсит OpenAPI спецификацию"""
-        response = self.session.get(url, timeout=30)
-        response.raise_for_status()
+        try:
+            response = self.session.get(url, timeout=30)
+            response.raise_for_status()
+        except Timeout:
+            raise Exception(f"Timeout при подключении к {url}")
+        except ConnectionError as e:
+            raise Exception(f"Ошибка подключения к {url}: {str(e)}")
+        except HTTPError as e:
+            status_code = e.response.status_code if e.response else 'unknown'
+            raise Exception(f"HTTP ошибка {status_code} для {url}")
         
         # Определяем формат по Content-Type или расширению
         content_type = response.headers.get('content-type', '').lower()
         
-        if 'yaml' in content_type or url.endswith(('.yml', '.yaml')):
-            spec = yaml.safe_load(response.text)
-        else:
-            spec = response.json()
+        try:
+            if 'yaml' in content_type or url.endswith(('.yml', '.yaml')):
+                spec = yaml.safe_load(response.text)
+            else:
+                spec = response.json()
+        except json.JSONDecodeError as e:
+            raise Exception(f"Ошибка парсинга JSON: {str(e)}. Возможно, сервер вернул HTML вместо JSON")
+        except yaml.YAMLError as e:
+            raise Exception(f"Ошибка парсинга YAML: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Неожиданная ошибка при парсинге ответа: {str(e)}")
         
         return self._extract_api_info(spec, url, method_filter)
 

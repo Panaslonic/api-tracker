@@ -69,9 +69,21 @@ clean: ## Очистить временные файлы
 	rm -rf dist
 	rm -rf build
 
-run: ## Запустить API Watcher
-	@echo "$(GREEN)Запуск API Watcher...$(NC)"
+run: ## Запустить API Watcher (V1)
+	@echo "$(GREEN)Запуск API Watcher V1...$(NC)"
 	python main.py
+
+run-v2: ## Запустить API Watcher V2 (с AI)
+	@echo "$(GREEN)Запуск API Watcher V2...$(NC)"
+	python -m watcher_v2
+
+run-weekly: ## Запустить еженедельную проверку V2
+	@echo "$(GREEN)Запуск еженедельной проверки...$(NC)"
+	python weekly_check.py
+
+test-v2: ## Тестировать API Watcher V2
+	@echo "$(GREEN)Тестирование API Watcher V2...$(NC)"
+	python test_v2.py
 
 run-health: ## Проверить состояние здоровья
 	@echo "$(GREEN)Проверка состояния здоровья...$(NC)"

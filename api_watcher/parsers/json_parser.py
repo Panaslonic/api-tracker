@@ -5,7 +5,10 @@ JSON Parser - парсер для произвольных JSON Schema
 
 import requests
 import json
+import os
+import urllib.parse
 from typing import Dict, Any
+from requests.exceptions import Timeout, ConnectionError, HTTPError
 
 
 class JSONParser:
@@ -16,8 +19,6 @@ class JSONParser:
         """Парсит JSON документ"""
         if url.startswith('file://') or not url.startswith('http'):
             # Локальный файл
-            import urllib.parse
-            import os
             if url.startswith('file://'):
                 file_path = urllib.parse.unquote(url[7:])  # Убираем file://
             else:
@@ -26,14 +27,35 @@ class JSONParser:
             # Если путь относительный, делаем его абсолютным
             if not os.path.isabs(file_path):
                 file_path = os.path.abspath(file_path)
-                
-            with open(file_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+            
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+            except FileNotFoundError:
+                raise Exception(f"Файл не найден: {file_path}")
+            except json.JSONDecodeError as e:
+                raise Exception(f"Ошибка парсинга JSON файла: {str(e)}")
+            except Exception as e:
+                raise Exception(f"Ошибка чтения файла {file_path}: {str(e)}")
         else:
             # Удаленный файл
-            response = self.session.get(url, timeout=30)
-            response.raise_for_status()
-            data = response.json()
+            try:
+                response = self.session.get(url, timeout=30)
+                response.raise_for_status()
+            except Timeout:
+                raise Exception(f"Timeout при подключении к {url}")
+            except ConnectionError as e:
+                raise Exception(f"Ошибка подключения к {url}: {str(e)}")
+            except HTTPError as e:
+                status_code = e.response.status_code if e.response else 'unknown'
+                raise Exception(f"HTTP ошибка {status_code} для {url}")
+            
+            try:
+                data = response.json()
+            except json.JSONDecodeError as e:
+                raise Exception(f"Ошибка парсинга JSON: {str(e)}. Возможно, сервер вернул HTML вместо JSON")
+            except Exception as e:
+                raise Exception(f"Неожиданная ошибка при парсинге ответа: {str(e)}")
         
         return {
             'url': url,

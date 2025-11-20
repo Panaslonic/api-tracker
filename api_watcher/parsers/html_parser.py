@@ -6,6 +6,7 @@ HTML Parser - парсер для HTML-страниц документации
 import requests
 from bs4 import BeautifulSoup
 from typing import Dict, List, Any
+from requests.exceptions import Timeout, ConnectionError, HTTPError
 
 
 class HTMLParser:
@@ -21,8 +22,18 @@ class HTMLParser:
         base_url = url.split('#')[0]
         anchor = url.split('#')[1] if '#' in url else None
         
-        response = self.session.get(base_url, timeout=30)
-        response.raise_for_status()
+        try:
+            response = self.session.get(base_url, timeout=30)
+            response.raise_for_status()
+        except Timeout:
+            raise Exception(f"Timeout при подключении к {base_url}")
+        except ConnectionError as e:
+            raise Exception(f"Ошибка подключения к {base_url}: {str(e)}")
+        except HTTPError as e:
+            status_code = e.response.status_code if e.response else 'unknown'
+            raise Exception(f"HTTP ошибка {status_code} для {base_url}")
+        except Exception as e:
+            raise Exception(f"Неожиданная ошибка при запросе {base_url}: {str(e)}")
         
         soup = BeautifulSoup(response.content, 'html.parser')
         

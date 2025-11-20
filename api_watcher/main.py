@@ -221,15 +221,54 @@ class APIWatcher:
                 changes_detected=changes_detected,
                 processing_time=processing_time
             )
-                
+        
+        # Обработка специфичных ошибок
+        except FileNotFoundError as e:
+            processing_time = time.time() - start_time
+            error_msg = f"Файл не найден: {str(e)}"
+            self.logger.error(f"❌ {error_msg} для {name}")
+            return ProcessingResult(url=url, name=name, success=False, error=error_msg, processing_time=processing_time)
+        
+        except TimeoutError as e:
+            processing_time = time.time() - start_time
+            error_msg = f"Timeout при подключении"
+            self.logger.error(f"⏱️ {error_msg} к {name}")
+            return ProcessingResult(url=url, name=name, success=False, error=error_msg, processing_time=processing_time)
+        
+        except ConnectionError as e:
+            processing_time = time.time() - start_time
+            error_msg = f"Ошибка подключения: {str(e)}"
+            self.logger.error(f"🔌 {error_msg} для {name}")
+            return ProcessingResult(url=url, name=name, success=False, error=error_msg, processing_time=processing_time)
+        
+        except json.JSONDecodeError as e:
+            processing_time = time.time() - start_time
+            error_msg = f"Ошибка парсинга JSON: {str(e)}"
+            self.logger.error(f"📝 {error_msg} для {name}")
+            return ProcessingResult(url=url, name=name, success=False, error=error_msg, processing_time=processing_time)
+        
+        except PermissionError as e:
+            processing_time = time.time() - start_time
+            error_msg = f"Нет доступа: {str(e)}"
+            self.logger.error(f"🔒 {error_msg} для {name}")
+            return ProcessingResult(url=url, name=name, success=False, error=error_msg, processing_time=processing_time)
+        
         except Exception as e:
             processing_time = time.time() - start_time
-            self.logger.error(f"❌ Ошибка при обработке {name}: {e}", exc_info=True)
+            error_type = type(e).__name__
+            error_msg = f"{error_type}: {str(e)}"
+            
+            # Логируем с полным traceback только для неожиданных ошибок
+            if "HTTP ошибка" in str(e) or "Timeout" in str(e) or "Ошибка подключения" in str(e):
+                self.logger.error(f"❌ {error_msg} для {name}")
+            else:
+                self.logger.error(f"❌ Неожиданная ошибка при обработке {name}: {error_msg}", exc_info=True)
+            
             return ProcessingResult(
                 url=url, 
                 name=name, 
                 success=False, 
-                error=str(e),
+                error=error_msg,
                 processing_time=processing_time
             )
 
