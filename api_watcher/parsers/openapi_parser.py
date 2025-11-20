@@ -27,8 +27,16 @@ class OpenAPIParser:
             status_code = e.response.status_code if e.response else 'unknown'
             raise Exception(f"HTTP ошибка {status_code} для {url}")
         
+        # Проверяем, что ответ не пустой
+        if not response.text or not response.text.strip():
+            raise Exception(f"Сервер вернул пустой ответ для {url}")
+        
         # Определяем формат по Content-Type или расширению
         content_type = response.headers.get('content-type', '').lower()
+        
+        # Проверяем, что это не HTML
+        if 'text/html' in content_type or response.text.strip().startswith(('<html', '<!DOCTYPE', '<!doctype')):
+            raise Exception(f"Сервер вернул HTML вместо JSON/YAML для {url}. Content-Type: {content_type}")
         
         try:
             if 'yaml' in content_type or url.endswith(('.yml', '.yaml')):
@@ -36,9 +44,12 @@ class OpenAPIParser:
             else:
                 spec = response.json()
         except json.JSONDecodeError as e:
-            raise Exception(f"Ошибка парсинга JSON: {str(e)}. Возможно, сервер вернул HTML вместо JSON")
+            # Показываем начало ответа для диагностики
+            preview = response.text[:200].strip()
+            raise Exception(f"Ошибка парсинга JSON: {str(e)}. Начало ответа: {preview}")
         except yaml.YAMLError as e:
-            raise Exception(f"Ошибка парсинга YAML: {str(e)}")
+            preview = response.text[:200].strip()
+            raise Exception(f"Ошибка парсинга YAML: {str(e)}. Начало ответа: {preview}")
         except Exception as e:
             raise Exception(f"Неожиданная ошибка при парсинге ответа: {str(e)}")
         

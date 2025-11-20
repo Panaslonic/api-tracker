@@ -50,10 +50,20 @@ class JSONParser:
                 status_code = e.response.status_code if e.response else 'unknown'
                 raise Exception(f"HTTP ошибка {status_code} для {url}")
             
+            # Проверяем, что ответ не пустой
+            if not response.text or not response.text.strip():
+                raise Exception(f"Сервер вернул пустой ответ для {url}")
+            
+            # Проверяем, что это не HTML
+            content_type = response.headers.get('content-type', '').lower()
+            if 'text/html' in content_type or response.text.strip().startswith(('<html', '<!DOCTYPE', '<!doctype')):
+                raise Exception(f"Сервер вернул HTML вместо JSON для {url}. Content-Type: {content_type}")
+            
             try:
                 data = response.json()
             except json.JSONDecodeError as e:
-                raise Exception(f"Ошибка парсинга JSON: {str(e)}. Возможно, сервер вернул HTML вместо JSON")
+                preview = response.text[:200].strip()
+                raise Exception(f"Ошибка парсинга JSON: {str(e)}. Начало ответа: {preview}")
             except Exception as e:
                 raise Exception(f"Неожиданная ошибка при парсинге ответа: {str(e)}")
         

@@ -24,6 +24,7 @@ from parsers.md_parser import MarkdownParser
 from storage.snapshot_manager import SnapshotManager
 from notifier.console_notifier import ConsoleNotifier
 from notifier.telegram_notifier import TelegramNotifier
+from notifier.webhook_notifier import WebhookNotifier
 from utils.comparator import Comparator
 
 
@@ -99,6 +100,13 @@ class APIWatcher:
             logging.info("📱 Telegram уведомления включены")
         else:
             self.telegram_notifier = None
+        
+        # Инициализируем Webhook уведомления, если настроены
+        if Config.is_webhook_configured():
+            self.webhook_notifier = WebhookNotifier(Config.WEBHOOK_URL)
+            logging.info("🔗 Webhook уведомления включены")
+        else:
+            self.webhook_notifier = None
             
     def _setup_logging(self):
         """Настройка системы логирования"""
@@ -203,6 +211,18 @@ class APIWatcher:
                     # Отправляем Telegram уведомление, если настроено
                     if self.telegram_notifier:
                         self.telegram_notifier.notify_changes(url, diff)
+                    
+                    # Отправляем Webhook уведомление, если настроено
+                    if self.webhook_notifier:
+                        summary = f"Обнаружены изменения в {name}"
+                        method_name = self._extract_method_name(current_data)
+                        self.webhook_notifier.send_change_notification(
+                            api_name=name,
+                            method_name=method_name,
+                            url=url,
+                            summary=summary,
+                            severity='moderate'
+                        )
                     
                     self.snapshot_manager.save_snapshot(url, current_data, name, self._extract_method_name(current_data), method_filter)
                     self.logger.info(f"✅ Обнаружены изменения в {name}")

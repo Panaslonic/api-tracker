@@ -2,10 +2,10 @@
 
 ## ✅ Что сделано
 
-### 1. OpenRouter AI вместо Gemini
+### 1. OpenRouter AI
 - ✅ Создан `api_watcher/utils/openrouter_analyzer.py`
 - ✅ Поддержка 100+ моделей (Claude, GPT-4, Llama и др.)
-- ✅ Автоматический fallback на Gemini
+- ✅ Единый API для всех моделей
 - ✅ Обновлен `watcher_v2.py` для использования OpenRouter
 
 ### 2. Webhook уведомления
@@ -111,9 +111,8 @@ python -m api_watcher.watcher_v2
 watcher_v2.py
     ↓
 ┌───────────────────────────────────────┐
-│  AI Analyzer (приоритет)              │
-│  1. OpenRouter (если настроен)        │
-│  2. Gemini (fallback)                 │
+│  AI Analyzer                          │
+│  OpenRouter (если настроен)           │
 └───────────────┬───────────────────────┘
                 │
                 ▼
@@ -220,7 +219,7 @@ SLACK_CHANNEL=#api-changes
 ## ❓ FAQ
 
 **Q: Обязательно ли использовать OpenRouter?**  
-A: Нет, система автоматически использует Gemini если OpenRouter не настроен.
+A: Нет, система работает и без AI анализа. OpenRouter добавляет умное определение значимости изменений.
 
 **Q: Можно ли использовать только webhook без Slack?**  
 A: Да, просто не настраивайте SLACK_BOT_TOKEN.

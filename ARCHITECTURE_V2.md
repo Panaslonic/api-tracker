@@ -43,8 +43,8 @@
 │                    │       YES       │                           │
 │                    ▼                 ▼                           │
 │            ┌──────────────┐   ┌──────────────┐                  │
-│            │  Gemini AI   │   │  Categorize  │                  │
-│            │   Analysis   │   │   (OpenAPI)  │                  │
+│            │ OpenRouter   │   │  Categorize  │                  │
+│            │   AI Analysis│   │   (OpenAPI)  │                  │
 │            └──────┬───────┘   └──────┬───────┘                  │
 │                   │                   │                           │
 │                   └─────────┬─────────┘                          │
@@ -69,7 +69,7 @@
 watcher = APIWatcherV2()
 ├── DatabaseManager (SQLite/PostgreSQL)
 ├── ZenRowsClient (если настроен)
-├── GeminiAnalyzer (если настроен)
+├── OpenRouterAnalyzer (если настроен)
 ├── SlackNotifier (если настроен)
 └── SmartComparator
 ```
@@ -120,7 +120,7 @@ _compare_openapi(old_spec, new_spec)
 │   │   ├─▶ schema_changes
 │   │   └─▶ breaking_changes
 │   │
-│   ├─▶ Gemini AI: analyze_openapi_changes()
+│   ├─▶ OpenRouter AI: analyze_openapi_changes()
 │   │   └─▶ Создать человекочитаемую сводку
 │   │
 │   ├─▶ Определить severity:
@@ -149,7 +149,7 @@ _compare_html(old_html, new_html)
 ├─▶ Сравнение текстов
 │   └─▶ Если текст не изменился → return False
 │
-├─▶ Gemini AI: analyze_changes()
+├─▶ OpenRouter AI: analyze_changes()
 │   ├─▶ Промпт: "Определи существенные изменения"
 │   ├─▶ Игнорировать: опечатки, форматирование
 │   └─▶ Вернуть: has_significant_changes, summary, key_changes
@@ -272,10 +272,10 @@ class ZenRowsClient:
 2. С премиум прокси (js_render=True, premium_proxy=True)
 3. Без JS (js_render=False, premium_proxy=False)
 
-### Gemini AI
+### OpenRouter AI
 
 ```python
-class GeminiAnalyzer:
+class OpenRouterAnalyzer:
     def analyze_changes(old_text, new_text):
         prompt = f"""
         Сравни два текста документации и определи:
@@ -362,7 +362,7 @@ class SlackNotifier:
 - Получение контента: 1-3 сек (ZenRows), 0.5-1 сек (direct)
 - Сравнение по хешу: <0.01 сек
 - Структурное сравнение OpenAPI: 0.1-0.5 сек
-- AI анализ (Gemini): 2-5 сек
+- AI анализ (OpenRouter): 2-5 сек
 - Сохранение в БД: <0.1 сек
 - Отправка в Slack: 0.5-1 сек
 
@@ -376,7 +376,7 @@ class SlackNotifier:
 ```bash
 # .env файл (не коммитить в git!)
 ZENROWS_API_KEY=secret
-GEMINI_API_KEY=secret
+OPENROUTER_API_KEY=secret
 SLACK_BOT_TOKEN=secret
 ```
 
