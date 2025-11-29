@@ -6,9 +6,10 @@ Test script for API Watcher V2
 
 import sys
 import os
+import asyncio
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from api_watcher.watcher_v2 import APIWatcherV2
+from api_watcher.watcher import APIWatcher as APIWatcherV2
 from api_watcher.config import Config
 import logging
 
@@ -38,7 +39,7 @@ def test_configuration():
     logger.info("="*60 + "\n")
 
 
-def test_single_url():
+async def test_single_url():
     """Тест обработки одного URL"""
     logger.info("\n" + "="*60)
     logger.info("🧪 ТЕСТ ОБРАБОТКИ URL")
@@ -50,7 +51,7 @@ def test_single_url():
     watcher = APIWatcherV2()
     
     try:
-        result = watcher.process_url(
+        result = await watcher.process_url(
             url=test_url,
             api_name="HTTPBin Test API",
             method_name="JSON Response"
@@ -72,7 +73,7 @@ def test_single_url():
         logger.error(f"❌ Ошибка теста: {e}", exc_info=True)
         
     finally:
-        watcher.cleanup()
+        await watcher.cleanup()
     
     logger.info("="*60 + "\n")
 
@@ -159,7 +160,7 @@ def test_comparator():
     logger.info("="*60 + "\n")
 
 
-def main():
+async def main():
     """Главная функция"""
     logger.info("\n" + "🚀 " + "="*56)
     logger.info("🚀 API WATCHER V2 - ТЕСТИРОВАНИЕ")
@@ -176,7 +177,7 @@ def main():
         test_database()
         
         # 4. Тест обработки URL
-        test_single_url()
+        await test_single_url()
         
         logger.info("\n" + "🎉 " + "="*56)
         logger.info("🎉 ВСЕ ТЕСТЫ ЗАВЕРШЕНЫ УСПЕШНО!")
@@ -190,4 +191,4 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(asyncio.run(main()))

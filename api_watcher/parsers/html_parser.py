@@ -5,15 +5,20 @@ HTML Parser - парсер для HTML-страниц документации
 
 import requests
 from bs4 import BeautifulSoup
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from requests.exceptions import Timeout, ConnectionError, HTTPError
+
+from api_watcher.config import Config
+from api_watcher.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class HTMLParser:
-    def __init__(self):
+    def __init__(self, user_agent: Optional[str] = None):
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            'User-Agent': user_agent or Config.USER_AGENT
         })
 
     def parse(self, url: str, selector: str = None) -> Dict[str, Any]:
@@ -23,7 +28,7 @@ class HTMLParser:
         anchor = url.split('#')[1] if '#' in url else None
         
         try:
-            response = self.session.get(base_url, timeout=30)
+            response = self.session.get(base_url, timeout=Config.REQUEST_TIMEOUT)
             response.raise_for_status()
         except Timeout:
             raise Exception(f"Timeout при подключении к {base_url}")
@@ -34,6 +39,11 @@ class HTMLParser:
             raise Exception(f"HTTP ошибка {status_code} для {base_url}")
         except Exception as e:
             raise Exception(f"Неожиданная ошибка при запросе {base_url}: {str(e)}")
+        
+        # Проверяем, что контент не пустой
+        if not response.content:
+            logger.warning("empty_html_response", url=base_url)
+            raise Exception(f"Сервер вернул пустой ответ для {base_url}")
         
         soup = BeautifulSoup(response.content, 'html.parser')
         

@@ -5,16 +5,21 @@ Markdown Parser - парсер для Markdown документации
 
 import requests
 import re
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+
+from api_watcher.config import Config
 
 
 class MarkdownParser:
-    def __init__(self):
+    def __init__(self, user_agent: Optional[str] = None):
         self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': user_agent or Config.USER_AGENT
+        })
 
     def parse(self, url: str, **kwargs) -> Dict[str, Any]:
         """Парсит Markdown документ"""
-        response = self.session.get(url, timeout=30)
+        response = self.session.get(url, timeout=Config.REQUEST_TIMEOUT)
         response.raise_for_status()
         
         content = response.text

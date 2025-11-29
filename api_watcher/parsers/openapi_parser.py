@@ -6,18 +6,26 @@ OpenAPI Parser - парсер для OpenAPI спецификаций (JSON/YAML
 import requests
 import json
 import yaml
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from requests.exceptions import Timeout, ConnectionError, HTTPError
+
+from api_watcher.config import Config
+from api_watcher.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class OpenAPIParser:
-    def __init__(self):
+    def __init__(self, user_agent: Optional[str] = None):
         self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': user_agent or Config.USER_AGENT
+        })
 
     def parse(self, url: str, method_filter: str = None) -> Dict[str, Any]:
         """Парсит OpenAPI спецификацию"""
         try:
-            response = self.session.get(url, timeout=30)
+            response = self.session.get(url, timeout=Config.REQUEST_TIMEOUT)
             response.raise_for_status()
         except Timeout:
             raise Exception(f"Timeout при подключении к {url}")

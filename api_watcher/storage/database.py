@@ -4,8 +4,7 @@ Database models and manager for API Watcher
 """
 
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 from datetime import datetime
 from typing import Optional, List
 import json

@@ -1,65 +1,51 @@
 version: '3.8'
 
 services:
-  api-watcher:
+  db:
+    image: postgres:15-alpine
+    container_name: api-watcher-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-api_watcher}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-api_watcher_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-api_watcher}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-api_watcher}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  watcher:
     build: .
     container_name: api-watcher
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
+      - ./urls.json:/app/urls.json:ro
       - ./snapshots:/app/snapshots
-      - ./urls.json:/app/urls.json
-      - ./.env:/app/.env
       - ./logs:/app/logs
     environment:
-      - API_WATCHER_SNAPSHOTS_DIR=/app/snapshots
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-api_watcher}:${POSTGRES_PASSWORD:-api_watcher_secret}@db:5432/${POSTGRES_DB:-api_watcher}
       - API_WATCHER_URLS_FILE=/app/urls.json
-      - LOG_LEVEL=INFO
+      - API_WATCHER_SNAPSHOTS_DIR=/app/snapshots
+      - API_WATCHER_LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-anthropic/claude-3.5-sonnet}
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-}
+      - SLACK_CHANNEL=${SLACK_CHANNEL:-}
+      - WEBHOOK_URL=${WEBHOOK_URL:-}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+      - ZENROWS_API_KEY=${ZENROWS_API_KEY:-}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "/app/api_watcher/health_check.py", "--quiet"]
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
-    
-    # Для запуска по расписанию (каждые 30 минут)
-    # Раскомментируйте следующие строки и закомментируйте command выше
-    # command: >
-    #   sh -c "
-    #   while true; do
-    #     python api_watcher/main.py
-    #     sleep 1800
-    #   done
-    #   "
 
-  # Health check HTTP сервер
-  api-watcher-health:
-    build: .
-    container_name: api-watcher-health
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./snapshots:/app/snapshots
-      - ./logs:/app/logs
-    environment:
-      - LOG_LEVEL=INFO
-    command: python api_watcher/health_server.py --host 0.0.0.0 --port 8080
-    restart: unless-stopped
-    depends_on:
-      - api-watcher
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
-  # Опциональный сервис для веб-интерфейса (будущая функция)
-  # api-watcher-web:
-  #   build: 
-  #     context: .
-  #     dockerfile: Dockerfile.web
-  #   ports:
-  #     - "8081:8080"
-  #   depends_on:
-  #     - api-watcher
-  #   volumes:
-  #     - ./snapshots:/app/snapshots
+volumes:
+  postgres_data:

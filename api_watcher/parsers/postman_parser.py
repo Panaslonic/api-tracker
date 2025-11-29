@@ -5,16 +5,21 @@ Postman Parser - парсер для Postman коллекций
 
 import requests
 import json
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+
+from api_watcher.config import Config
 
 
 class PostmanParser:
-    def __init__(self):
+    def __init__(self, user_agent: Optional[str] = None):
         self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': user_agent or Config.USER_AGENT
+        })
 
     def parse(self, url: str, **kwargs) -> Dict[str, Any]:
         """Парсит Postman коллекцию"""
-        response = self.session.get(url, timeout=30)
+        response = self.session.get(url, timeout=Config.REQUEST_TIMEOUT)
         response.raise_for_status()
         
         # Проверяем, что ответ не пустой

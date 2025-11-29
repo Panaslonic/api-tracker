@@ -7,13 +7,21 @@ import requests
 import json
 import os
 import urllib.parse
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from requests.exceptions import Timeout, ConnectionError, HTTPError
+
+from api_watcher.config import Config
+from api_watcher.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class JSONParser:
-    def __init__(self):
+    def __init__(self, user_agent: Optional[str] = None):
         self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': user_agent or Config.USER_AGENT
+        })
 
     def parse(self, url: str, **kwargs) -> Dict[str, Any]:
         """Парсит JSON документ"""
@@ -40,7 +48,7 @@ class JSONParser:
         else:
             # Удаленный файл
             try:
-                response = self.session.get(url, timeout=30)
+                response = self.session.get(url, timeout=Config.REQUEST_TIMEOUT)
                 response.raise_for_status()
             except Timeout:
                 raise Exception(f"Timeout при подключении к {url}")

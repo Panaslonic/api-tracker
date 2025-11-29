@@ -5,9 +5,10 @@ ZenRows client for fetching web content
 
 import requests
 from typing import Optional, Dict
-import logging
 
-logger = logging.getLogger(__name__)
+from api_watcher.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class ZenRowsClient:
@@ -55,11 +56,11 @@ class ZenRowsClient:
             response = requests.get(self.BASE_URL, params=params, timeout=60)
             response.raise_for_status()
             
-            logger.info(f"✅ ZenRows: успешно получен контент для {url}")
+            logger.info("zenrows_fetch_success", url=url)
             return response.text
             
         except requests.exceptions.RequestException as e:
-            logger.error(f"❌ ZenRows ошибка для {url}: {e}")
+            logger.error("zenrows_request_error", url=url, error=str(e))
             return None
     
     def fetch_with_fallback(self, url: str) -> Optional[str]:
@@ -74,14 +75,14 @@ class ZenRowsClient:
         if html:
             return html
         
-        logger.warning(f"⚠️ ZenRows: первая попытка не удалась, пробуем с премиум прокси")
+        logger.warning("zenrows_retry_premium", url=url)
         
         # Попытка 2: с премиум прокси
         html = self.fetch_html(url, js_render=True, premium_proxy=True)
         if html:
             return html
         
-        logger.warning(f"⚠️ ZenRows: вторая попытка не удалась, пробуем без JS")
+        logger.warning("zenrows_retry_no_js", url=url)
         
         # Попытка 3: без JS рендеринга
         html = self.fetch_html(url, js_render=False, premium_proxy=False)
