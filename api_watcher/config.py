@@ -4,6 +4,10 @@
 
 import os
 from typing import Optional
+from dotenv import load_dotenv
+
+# Load .env file from project root
+load_dotenv()
 
 class Config:
     """Класс конфигурации приложения"""
