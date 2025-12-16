@@ -9,12 +9,37 @@ from dataclasses import dataclass
 
 import aiohttp
 
+from api_watcher.config import Config
 from api_watcher.logging_config import get_logger
+from api_watcher.utils.usage_tracker import UsageTracker
 
 logger = get_logger(__name__)
 
+async def _read_text_limited(response: aiohttp.ClientResponse, max_bytes: int) -> str:
+    """
+    Читает тело ответа с ограничением по размеру, чтобы не тащить огромные страницы в память.
+    Декодирует с учётом charset, заменяя ошибки.
+    """
+    # Быстрый отказ по Content-Length, если сервер его честно прислал
+    content_length = response.headers.get("Content-Length")
+    if content_length:
+        try:
+            if int(content_length) > max_bytes:
+                raise ValueError(f"Response too large: {content_length} bytes > {max_bytes}")
+        except ValueError:
+            # если Content-Length нечисловой — игнорируем и читаем потоково
+            pass
 
-@dataclass
+    collected = bytearray()
+    async for chunk in response.content.iter_chunked(64 * 1024):
+        if not chunk:
+            continue
+        collected.extend(chunk)
+        if len(collected) > max_bytes:
+            raise ValueError(f"Response too large: read>{max_bytes} bytes")
+
+    charset = response.charset or "utf-8"
+    return collected.decode(charset, errors="replace")
 
 
 @dataclass
@@ -100,7 +125,20 @@ class AsyncFetcher:
             try:
                 session = await self._get_session()
                 async with session.get(url) as response:
-                    content = await response.text()
+                    try:
+                        max_bytes = max(1, int(getattr(Config, "MAX_RESPONSE_BYTES", 2 * 1024 * 1024)))
+                        content = await _read_text_limited(response, max_bytes=max_bytes)
+                    except ValueError as e:
+                        # Не ретраим: это "логическая" ошибка/защита от чрезмерных ответов
+                        logger.warning("response_too_large", url=url, error=str(e))
+                        return FetchResult(
+                            content=None,
+                            status_code=response.status,
+                            success=False,
+                            error=str(e),
+                            url=url,
+                            attempts=attempts
+                        )
                     
                     # Check if we should retry based on status code
                     if self._is_retryable_status(response.status) and attempt < max_attempts - 1:
@@ -211,12 +249,20 @@ class AsyncZenRowsFetcher:
         self, 
         api_key: str, 
         timeout: int = 60,
-        max_retries: int = DEFAULT_MAX_RETRIES
+        max_retries: int = DEFAULT_MAX_RETRIES,
+        usage_tracker: Optional[UsageTracker] = None,
+        daily_request_limit: Optional[int] = None
     ):
         self.api_key = api_key
         self.timeout = aiohttp.ClientTimeout(total=timeout)
         self.max_retries = max_retries
         self._session: Optional[aiohttp.ClientSession] = None
+        self.usage_tracker = usage_tracker or UsageTracker()
+        self.daily_request_limit = (
+            int(daily_request_limit)
+            if daily_request_limit is not None
+            else int(getattr(Config, "ZENROWS_DAILY_REQUEST_LIMIT", 2000))
+        )
     
     async def _get_session(self) -> aiohttp.ClientSession:
         if self._session is None or self._session.closed:
@@ -249,8 +295,39 @@ class AsyncZenRowsFetcher:
         for attempt in range(self.max_retries):
             try:
                 session = await self._get_session()
+                # Предохранитель: ZenRows может сжигать бюджет при частом polling или ретраях
+                if not self.usage_tracker.can_use("zenrows", self.daily_request_limit):
+                    logger.error(
+                        "zenrows_daily_limit_exceeded",
+                        url=url,
+                        limit=self.daily_request_limit,
+                        usage=self.usage_tracker.get_usage("zenrows")
+                    )
+                    return FetchResult(
+                        content=None,
+                        status_code=0,
+                        success=False,
+                        error="ZenRows daily limit exceeded",
+                        url=url,
+                        attempts=attempt + 1
+                    )
+
+                # Считаем каждый реальный вызов ZenRows (платный), даже если вернётся ошибка
+                self.usage_tracker.increment("zenrows", 1)
                 async with session.get(self.BASE_URL, params=params) as response:
-                    content = await response.text()
+                    try:
+                        max_bytes = max(1, int(getattr(Config, "MAX_RESPONSE_BYTES", 2 * 1024 * 1024)))
+                        content = await _read_text_limited(response, max_bytes=max_bytes)
+                    except ValueError as e:
+                        logger.warning("zenrows_response_too_large", url=url, error=str(e))
+                        return FetchResult(
+                            content=None,
+                            status_code=response.status,
+                            success=False,
+                            error=str(e),
+                            url=url,
+                            attempts=attempt + 1
+                        )
                     success = response.status == 200
                     
                     # Circuit Breaker for Critical Errors
@@ -367,12 +444,15 @@ class ContentFetcher:
             max_retries=max_retries
         )
         self._zenrows: Optional[AsyncZenRowsFetcher] = None
+        self._usage_tracker = UsageTracker()
         
         if zenrows_api_key:
             self._zenrows = AsyncZenRowsFetcher(
                 zenrows_api_key, 
                 timeout=60,
-                max_retries=max_retries
+                max_retries=max_retries,
+                usage_tracker=self._usage_tracker,
+                daily_request_limit=getattr(Config, "ZENROWS_DAILY_REQUEST_LIMIT", 2000)
             )
             logger.info("zenrows_client_initialized")
     
@@ -387,6 +467,17 @@ class ContentFetcher:
             Контент или None
         """
         if self._zenrows:
+            # Если дневной лимит исчерпан — не трогаем ZenRows, а пробуем прямой запрос
+            if not self._usage_tracker.can_use("zenrows", int(getattr(Config, "ZENROWS_DAILY_REQUEST_LIMIT", 2000))):
+                logger.error(
+                    "zenrows_disabled_due_to_daily_limit",
+                    url=url,
+                    limit=getattr(Config, "ZENROWS_DAILY_REQUEST_LIMIT", 2000),
+                    usage=self._usage_tracker.get_usage("zenrows")
+                )
+                result = await self._direct.fetch(url)
+                return result.content if result.success else None
+
             logger.info("fetching_via_zenrows", url=url)
             return await self._zenrows.fetch_with_fallback(url)
         else:
